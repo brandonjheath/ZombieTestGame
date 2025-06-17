@@ -49,25 +49,26 @@ public class TimeManager : MonoBehaviour
     private void AdvanceMinute()
     {
         currentMinute++;
-        if (currentMinute >= 60)
-        {
-            currentMinute = 0;
-            currentHour++;
+        if (currentMinute < 60) return;
 
-            // If it's time to force-sleep...
-            if (currentHour >= forcedSleepHour)
-            {
-                StartCoroutine(DoForcedSleep());
-            }
-            else if (currentHour >= 24)
-            {
-                // Normal day rollover (if you want days to pass even if no forced sleep)
-                currentHour = 0;
-                currentDay++;
-                StartCoroutine(InvokeDayStartNextFrame());
-            }
+        // roll over minutes
+        currentMinute = 0;
+        currentHour++;
+
+        // 1) Wrap the clock at midnight, but keep same day
+        if (currentHour >= 24)
+        {
+            currentHour = 0;
+        }
+
+        // 2) When we hit forcedSleepHour exactly, do the sleep/day reset
+        if (currentHour == forcedSleepHour)
+        {
+            StartCoroutine(DoForcedSleep());
         }
     }
+
+
 
     private IEnumerator DoForcedSleep()
     {
